@@ -11,7 +11,7 @@ class BobTest {
     }
 
     @Test
-    fun `shouting`() {
+    fun shouting() {
         assertEquals("Whoa, chill out!", Bob.hey("WATCH OUT!"))
     }
 
@@ -91,7 +91,7 @@ class BobTest {
     }
 
     @Test
-    fun `silence`() {
+    fun silence() {
         assertEquals("Fine. Be that way!", Bob.hey(""))
     }
 
