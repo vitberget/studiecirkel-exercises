@@ -1,4 +1,4 @@
-package com.hackosynth.week1
+package com.hackosynth.week1.dndcharacter
 
 class DndCharacter {
     val strength: Int = TODO()

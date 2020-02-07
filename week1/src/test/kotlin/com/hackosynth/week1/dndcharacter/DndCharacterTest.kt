@@ -1,5 +1,6 @@
-package com.hackosynth.week1
+package com.hackosynth.week1.dndcharacter
 
+import com.hackosynth.week1.dndcharacter.DndCharacter
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
