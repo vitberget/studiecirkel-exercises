@@ -1,5 +1,5 @@
 ## Dnd Character
-In the game Dungeons & Dragons (Dnd), each player starts by making a character.
+In the game Dungeons & Dragons (DnD), each player starts by making a character.
 This character has, among other things, six abilities:
 strength, dexterity, constitution, intelligence, wisdom and charisma.
 Theses six abilities are generated randomly.
@@ -22,5 +22,5 @@ For example, the six throws of four dice may look like this:
 - 3, 5, 3, 4: You discard the 3 and sum 5 + 3 + 4 = 12, which you assign to wisdom.
 - 6, 6, 6, 6: You discard the 6 and sum 6 + 6 + 6 = 18, which you assign to charisma.
 <br>
-<br>
+<!-- end of the list -->
 Because the constitution is 3, the constitution modifier is -4 and the hitpoints are 6.
