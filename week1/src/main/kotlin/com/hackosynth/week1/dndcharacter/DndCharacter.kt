@@ -18,7 +18,7 @@ class DndCharacter {
          * @return the generated score
          */
         fun generateAbilityScore(): Int = List(4) {
-            Random.nextInt(1, 6)
+            Random.nextInt(1, 7)
         }.sortedDescending().take(3).sum()
 
         /**
