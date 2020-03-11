@@ -7,4 +7,4 @@ The project is split up into different modules grouped in weeks and with their o
 Each exercise have tests to verify that the exercise is solved as intended. The exercises also contain snub files to get you started.
 ## Weeks
 
-- [Week 1](week1/README.md)
+- [Week 1](week1)
