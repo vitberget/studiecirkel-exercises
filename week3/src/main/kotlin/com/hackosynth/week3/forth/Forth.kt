@@ -1,29 +1,27 @@
 package com.hackosynth.week3.forth
 
-typealias STACK_FUN = (List<Int>) -> List<Int> // Because so much easier to read :D
+// Typealiases, because so much easier to read :D
+
+typealias STACK = List<Int>
+typealias OPERATOR = (STACK) -> STACK
+typealias OPERATORS = Map<String, OPERATOR>
 
 object Forth {
-    fun evaluate(vararg line: String): List<Int> {
-        val operators = mutableMapOf<String, STACK_FUN>(
-            "+" to ::plus,
-            "-" to ::minus,
-            "*" to ::multiply,
-            "/" to ::divide,
-            "dup" to ::dup,
-            "drop" to ::drop,
-            "swap" to ::swap,
-            "over" to ::over
-        )
 
+    private const val USER_DEFINED_WORD_START = ":"
+
+    fun evaluate(vararg line: String): STACK {
+        // operators and stack might be replaced forEach-loop below
+        var operators = forthOriginalOperations
         var stack = listOf<Int>()
 
         line.map { it.trim() }
             .map { it.split("""\s+""".toRegex()) }
             .forEach { list ->
-                if (list.first() == ":")
-                    doSomeUserDef(operators, list)
+                if (list.first() == USER_DEFINED_WORD_START)
+                    operators = doUserDefinedWord(operators, list)
                 else
-                    stack = doSomeStackStuff(list, stack, operators)
+                    stack = doStackOperation(list, stack, operators)
             }
 
         return stack
@@ -32,21 +30,23 @@ object Forth {
 
 // --- Stack manipulation
 
-    fun doSomeStackStuff(
-        list: List<String>,
-        originalStack: List<Int>,
-        operators: MutableMap<String, STACK_FUN>
-    ): List<Int> {
+    private fun doStackOperation(
+        command: List<String>,
+        originalStack: STACK,
+        operators: OPERATORS
+    ): STACK {
 
         var stack = originalStack
 
-        list.forEach {
-            val num = it.toIntOrNull()
-            if (num != null) {
-                stack = stack + num
-            } else {
-                val op = operators.get(it.toLowerCase()) ?: ::throwError
-                stack = op.invoke(stack)
+        command.forEach {
+            with(it.toIntOrNull()) {
+                stack = if (this != null)
+                    stack + this
+                else
+                    with(operators[it.toLowerCase()]) {
+                        require(this != null)
+                        this.invoke(stack)
+                    }
             }
         }
 
@@ -56,74 +56,89 @@ object Forth {
 
 // --- User define stuff belooooow....
 
-    fun doSomeUserDef(operators: MutableMap<String, STACK_FUN>, list: List<String>) {
-        val list2 = list.drop(1).dropLast(1) // drop : and ;
-        require(list2.size > 1)
+    private fun doUserDefinedWord(operators: OPERATORS, userDefCommand: List<String>): OPERATORS {
+        val trimmedUserDef = userDefCommand.drop(1).dropLast(1) // drop : and ;
+        require(trimmedUserDef.size > 1)
 
-        val word = list2.first().toLowerCase()
+        val word = trimmedUserDef.first().toLowerCase()
+        require(word.toIntOrNull() == null)
 
-        if (word.toIntOrNull() != null) {
-            require(false)
-        }
-
-        operators[word] = list2.drop(1)
-            .map { mapFun(operators, it) }
-            .reduce { acc, fn -> { fn(acc(it)) } }
+        return operators + (word to userDefToOperator(trimmedUserDef, operators))
     }
 
-    private fun mapFun(operators: MutableMap<String, STACK_FUN>, word: String): STACK_FUN {
-        val num = word.toIntOrNull()
-        return if (num != null) {
-            { it + num }
-        } else {
-            operators.get(word.toLowerCase()) ?: ::throwError
-        }
-    }
+    private fun userDefToOperator(userDef: List<String>, operators: OPERATORS): OPERATOR =
+        userDef.drop(1)
+            .map { mapUserWordToOperator(it, operators) }
+            .reduce { accumulator, anotherFun -> { anotherFun(accumulator(it)) } }
 
-    fun throwError(stack: List<Int>): List<Int> {
-        require(false);
+    private fun mapUserWordToOperator(word: String, operators: OPERATORS): OPERATOR =
+        with(word.toIntOrNull()) {
+            return if (this != null) {
+                addNumberToStack(this)
+            } else {
+                operators[word.toLowerCase()] ?: ::throwError
+            }
+        }
+
+    // Because easier to read and understand
+    private fun addNumberToStack(num: Int): OPERATOR = { it + num }
+
+    // Throw error when executed, I think it's nicer than when defined... it might not be called
+    private fun throwError(stackNotUsed: STACK): STACK {
+        require(false)
         return emptyList()
     }
 
 
 // --- "Original" "Forth" funs belooooooooow....
 
-    fun plus(stack: List<Int>): List<Int> {
+    private val forthOriginalOperations = mapOf<String, OPERATOR>(
+        "+" to ::plus,
+        "-" to ::minus,
+        "*" to ::multiply,
+        "/" to ::divide,
+        "dup" to ::dup,
+        "drop" to ::drop,
+        "swap" to ::swap,
+        "over" to ::over
+    )
+
+    private fun plus(stack: STACK): STACK {
         require(stack.size == 2) // Perhaps not a real requirement, but it passes the tests... so, if not it's a "feature"
         return listOf(stack[0] + stack[1])
     }
 
-    fun minus(stack: List<Int>): List<Int> {
+    private fun minus(stack: STACK): STACK {
         require(stack.size == 2)
         return listOf(stack[0] - stack[1])
     }
 
-    fun multiply(stack: List<Int>): List<Int> {
+    private fun multiply(stack: STACK): STACK {
         require(stack.size == 2)
         return listOf(stack[0] * stack[1])
     }
 
-    fun divide(stack: List<Int>): List<Int> {
+    private fun divide(stack: STACK): STACK {
         require(stack.size == 2)
         return listOf(stack[0] / stack[1])
     }
 
-    fun dup(stack: List<Int>): List<Int> {
-        require(stack.size >= 1)
+    private fun dup(stack: STACK): STACK {
+        require(stack.isNotEmpty())
         return stack + stack.last()
     }
 
-    fun drop(stack: List<Int>): List<Int> {
-        require(stack.size >= 1)
+    private fun drop(stack: STACK): STACK {
+        require(stack.isNotEmpty())
         return stack.dropLast(1)
     }
 
-    fun swap(stack: List<Int>): List<Int> {
+    private fun swap(stack: STACK): STACK {
         require(stack.size >= 2)
         return stack.dropLast(2) + stack.takeLast(2).reversed()
     }
 
-    fun over(stack: List<Int>): List<Int> {
+    private fun over(stack: STACK): STACK {
         require(stack.size >= 2)
         return stack + stack.takeLast(2).first()
     }
