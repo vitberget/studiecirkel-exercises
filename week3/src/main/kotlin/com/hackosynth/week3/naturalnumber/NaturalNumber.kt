@@ -12,16 +12,17 @@ object NaturalNumber {
     fun classify(naturalNumber: Int): Classification {
         require(naturalNumber > 0)
 
-        val mummy = mummify(naturalNumber)
+        val factorSum = sumFactors(naturalNumber)
+
         return when {
-            mummy == naturalNumber -> PERFECT
-            mummy < naturalNumber -> DEFICIENT
+            factorSum == naturalNumber -> PERFECT
+            factorSum < naturalNumber -> DEFICIENT
             else -> ABUNDANT
         }
     }
 
-    fun mummify(naturalNumber: Int): Int =
-        (1..(naturalNumber / 2))
-            .filter { naturalNumber % it == 0 }
+    private fun sumFactors(number: Int): Int =
+        (1..number.div(2))
+            .filter { number % it == 0 }
             .sum()
 }
